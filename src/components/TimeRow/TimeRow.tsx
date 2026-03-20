@@ -22,6 +22,8 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
   const [showCommentPopup, setShowCommentPopup] = useState(false);
   const [popupComment, setPopupComment] = useState('');
   const [textareaSize, setTextareaSize] = useState({ width: 400, height: 150 });
+  const [showTimeWarning, setShowTimeWarning] = useState(false);
+  const [timeWarningMessage, setTimeWarningMessage] = useState('');
   
   const timeInRef = useRef<HTMLInputElement>(null);
   const timeOutRef = useRef<HTMLInputElement>(null);
@@ -71,7 +73,13 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
 
     const result = validateTime(timeIn);
     if (!result.isValid) {
-      setTimeInError(result.error || 'Неверный формат времени');
+      if (result.isIncomplete) {
+        setTimeInError(result.error || 'Время введено не полностью');
+        setTimeWarningMessage('Время прихода введено не полностью. Введите полностью (ЧЧ:ММ).');
+        setShowTimeWarning(true);
+      } else {
+        setTimeInError(result.error || 'Неверный формат времени');
+      }
       return;
     }
     
@@ -94,7 +102,13 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
 
     const result = validateTime(timeOut);
     if (!result.isValid) {
-      setTimeOutError(result.error || 'Неверный формат времени');
+      if (result.isIncomplete) {
+        setTimeOutError(result.error || 'Время введено не полностью');
+        setTimeWarningMessage('Время ухода введено не полностью. Введите полностью (ЧЧ:ММ).');
+        setShowTimeWarning(true);
+      } else {
+        setTimeOutError(result.error || 'Неверный формат времени');
+      }
       return;
     }
     
@@ -179,6 +193,12 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
 
   const handlePopupClose = useCallback(() => {
     setShowCommentPopup(false);
+  }, []);
+
+  const handleTimeWarningClose = useCallback(() => {
+    setShowTimeWarning(false);
+    setTimeInError(null);
+    setTimeOutError(null);
   }, []);
 
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
@@ -323,6 +343,17 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
                   Сохранить
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+        {showTimeWarning && (
+          <div className="time-row__time-warning-overlay" onClick={handleTimeWarningClose}>
+            <div className="time-row__time-warning" onClick={(e) => e.stopPropagation()}>
+              <div className="time-row__time-warning-icon">!</div>
+              <div className="time-row__time-warning-message">{timeWarningMessage}</div>
+              <button type="button" className="time-row__time-warning-btn" onClick={handleTimeWarningClose}>
+                OK
+              </button>
             </div>
           </div>
         )}
