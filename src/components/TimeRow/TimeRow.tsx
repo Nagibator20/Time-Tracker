@@ -21,11 +21,14 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
   const [timeOutError, setTimeOutError] = useState<string | null>(null);
   const [showCommentPopup, setShowCommentPopup] = useState(false);
   const [popupComment, setPopupComment] = useState('');
+  const [textareaSize, setTextareaSize] = useState({ width: 400, height: 150 });
   
   const timeInRef = useRef<HTMLInputElement>(null);
   const timeOutRef = useRef<HTMLInputElement>(null);
   const commentInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resizeStartRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null);
 
   useEffect(() => {
     setTimeIn(record.timeIn || '');
@@ -178,6 +181,35 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
     setShowCommentPopup(false);
   }, []);
 
+  const handleResizeStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    resizeStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      width: textareaSize.width,
+      height: textareaSize.height
+    };
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (!resizeStartRef.current) return;
+      const deltaX = moveEvent.clientX - resizeStartRef.current.x;
+      const deltaY = moveEvent.clientY - resizeStartRef.current.y;
+      setTextareaSize({
+        width: Math.max(400, resizeStartRef.current.width + deltaX),
+        height: Math.max(150, resizeStartRef.current.height + deltaY)
+      });
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      resizeStartRef.current = null;
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [textareaSize]);
+
   const getStatusClass = (): string => {
     if (!record.timeIn || !record.timeOut) return '';
     if (record.hoursWorked > settings.standardHours) return 'time-row__status--overtime';
@@ -268,13 +300,21 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
         {showCommentPopup && (
           <div className="time-row__comment-popup-overlay" onClick={handlePopupClose}>
             <div className="time-row__comment-popup" onClick={(e) => e.stopPropagation()}>
-              <textarea
-                className="time-row__comment-popup-textarea"
-                value={popupComment}
-                onChange={handlePopupCommentChange}
-                autoFocus
-                placeholder="Введите комментарий..."
-              />
+              <div className="time-row__comment-popup-wrapper">
+                <textarea
+                  ref={textareaRef}
+                  className="time-row__comment-popup-textarea"
+                  value={popupComment}
+                  onChange={handlePopupCommentChange}
+                  autoFocus
+                  placeholder="Введите комментарий..."
+                  style={{ width: textareaSize.width, height: textareaSize.height }}
+                />
+                <div 
+                  className="time-row__comment-popup-resize" 
+                  onMouseDown={handleResizeStart}
+                />
+              </div>
               <div className="time-row__comment-popup-actions">
                 <button type="button" className="time-row__comment-popup-btn time-row__comment-popup-btn--cancel" onClick={handlePopupClose}>
                   Отмена

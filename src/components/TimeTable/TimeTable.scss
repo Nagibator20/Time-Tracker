@@ -278,13 +278,14 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
     min-width: 400px;
     min-height: 150px;
     padding: $spacing-md;
+    padding-bottom: 24px;
     border: 1px solid var(--color-border);
     border-radius: $border-radius-md;
     background: var(--color-bg);
     color: var(--color-text-main);
     font-family: inherit;
     font-size: $font-size-base;
-    resize: both;
+    resize: none;
     box-sizing: border-box;
     line-height: 1.5;
     overflow-wrap: break-word;
@@ -294,6 +295,38 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
       outline: none;
       border-color: var(--color-primary);
     }
+  }
+
+  &__comment-popup-resize {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    cursor: se-resize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid var(--color-text-muted);
+      border-bottom: 2px solid var(--color-text-muted);
+      opacity: 0.5;
+      transition: opacity 0.2s;
+    }
+
+    &:hover::before {
+      opacity: 1;
+    }
+  }
+
+  &__comment-popup-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
   }
 
   &__comment-popup-actions {
