@@ -303,7 +303,7 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
           aria-label="Комментарий"
         />
         {showCommentPopup && (
-          <div className="time-row__comment-popup-overlay" onClick={handlePopupClose}>
+          <div className="time-row__comment-popup-overlay" onMouseDown={handlePopupClose}>
             <div 
               className="time-row__comment-popup" 
               onClick={(e) => e.stopPropagation()}
