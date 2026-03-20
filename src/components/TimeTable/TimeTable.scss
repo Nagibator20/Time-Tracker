@@ -269,19 +269,19 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
     min-width: 400px;
     width: auto;
     max-width: 700px;
+    min-height: 200px;
     box-shadow: $shadow-lg;
     animation: popupSlideIn 0.2s ease;
     display: flex;
     flex-direction: column;
+    position: relative;
+    box-sizing: border-box;
   }
 
   &__comment-popup-textarea {
+    flex: 1;
     width: 100%;
-    max-width: 100%;
-    min-width: 400px;
-    min-height: 150px;
     padding: $spacing-md;
-    padding-bottom: 24px;
     border: 1px solid var(--color-border);
     border-radius: $border-radius-md;
     background: var(--color-bg);
@@ -324,10 +324,10 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
 
   &__comment-popup-resize {
     position: absolute;
-    bottom: 8px;
-    right: 8px;
-    width: 20px;
-    height: 20px;
+    bottom: 0;
+    right: 0;
+    width: 24px;
+    height: 24px;
     cursor: se-resize;
     display: flex;
     align-items: center;
@@ -346,12 +346,6 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
     &:hover::before {
       opacity: 1;
     }
-  }
-
-  &__comment-popup-wrapper {
-    position: relative;
-    display: flex;
-    flex-direction: column;
   }
 
   &__comment-popup-actions {

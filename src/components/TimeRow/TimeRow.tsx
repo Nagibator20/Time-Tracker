@@ -183,11 +183,16 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
 
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    const popup = (e.target as HTMLElement).closest('.time-row__comment-popup') as HTMLElement;
+    if (!popup) return;
+    
+    const rect = popup.getBoundingClientRect();
     resizeStartRef.current = {
       x: e.clientX,
       y: e.clientY,
-      width: textareaSize.width,
-      height: textareaSize.height
+      width: rect.width,
+      height: rect.height
     };
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
@@ -196,7 +201,7 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
       const deltaY = moveEvent.clientY - resizeStartRef.current.y;
       setTextareaSize({
         width: Math.min(700, Math.max(400, resizeStartRef.current.width + deltaX)),
-        height: Math.max(150, resizeStartRef.current.height + deltaY)
+        height: Math.max(200, resizeStartRef.current.height + deltaY)
       });
     };
 
@@ -208,7 +213,7 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  }, [textareaSize]);
+  }, []);
 
   const getStatusClass = (): string => {
     if (!record.timeIn || !record.timeOut) return '';
@@ -299,22 +304,19 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
         />
         {showCommentPopup && (
           <div className="time-row__comment-popup-overlay" onClick={handlePopupClose}>
-            <div className="time-row__comment-popup" onClick={(e) => e.stopPropagation()}>
-              <div className="time-row__comment-popup-wrapper">
-                <textarea
-                  ref={textareaRef}
-                  className="time-row__comment-popup-textarea"
-                  value={popupComment}
-                  onChange={handlePopupCommentChange}
-                  autoFocus
-                  placeholder="Введите комментарий..."
-                  style={{ width: textareaSize.width, height: textareaSize.height }}
-                />
-                <div 
-                  className="time-row__comment-popup-resize" 
-                  onMouseDown={handleResizeStart}
-                />
-              </div>
+            <div 
+              className="time-row__comment-popup" 
+              onClick={(e) => e.stopPropagation()}
+              style={{ width: textareaSize.width, height: textareaSize.height }}
+            >
+              <textarea
+                ref={textareaRef}
+                className="time-row__comment-popup-textarea"
+                value={popupComment}
+                onChange={handlePopupCommentChange}
+                autoFocus
+                placeholder="Введите комментарий..."
+              />
               <div className="time-row__comment-popup-actions">
                 <button type="button" className="time-row__comment-popup-btn time-row__comment-popup-btn--cancel" onClick={handlePopupClose}>
                   Отмена
@@ -323,6 +325,10 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
                   Сохранить
                 </button>
               </div>
+              <div 
+                className="time-row__comment-popup-resize" 
+                onMouseDown={handleResizeStart}
+              />
             </div>
           </div>
         )}
