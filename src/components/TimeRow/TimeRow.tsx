@@ -19,9 +19,12 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
   const [comment, setComment] = useState(record.comment || '');
   const [timeInError, setTimeInError] = useState<string | null>(null);
   const [timeOutError, setTimeOutError] = useState<string | null>(null);
+  const [showCommentPopup, setShowCommentPopup] = useState(false);
+  const [popupComment, setPopupComment] = useState('');
   
   const timeInRef = useRef<HTMLInputElement>(null);
   const timeOutRef = useRef<HTMLInputElement>(null);
+  const commentInputRef = useRef<HTMLInputElement>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -152,6 +155,29 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
     }
   }, [handleCommentBlur]);
 
+  const handleCommentClick = useCallback(() => {
+    if (!commentInputRef.current || !comment) return;
+    const isOverflowing = commentInputRef.current.scrollWidth > commentInputRef.current.clientWidth;
+    if (isOverflowing) {
+      setPopupComment(comment);
+      setShowCommentPopup(true);
+    }
+  }, [comment]);
+
+  const handlePopupCommentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPopupComment(e.target.value);
+  }, []);
+
+  const handlePopupSave = useCallback(() => {
+    setComment(popupComment);
+    setShowCommentPopup(false);
+    saveAndUpdate(timeIn || undefined, timeOut || undefined, popupComment);
+  }, [popupComment, timeIn, timeOut, saveAndUpdate]);
+
+  const handlePopupClose = useCallback(() => {
+    setShowCommentPopup(false);
+  }, []);
+
   const getStatusClass = (): string => {
     if (!record.timeIn || !record.timeOut) return '';
     if (record.hoursWorked > settings.standardHours) return 'time-row__status--overtime';
@@ -228,15 +254,38 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
       </div>
       <div className="time-row__cell">
         <input
+          ref={commentInputRef}
           type="text"
           className="time-row__comment-input"
           value={comment}
           onChange={handleCommentChange}
           onBlur={handleCommentBlur}
           onKeyDown={handleCommentKeyDown}
+          onClick={handleCommentClick}
           placeholder="..."
           aria-label="Комментарий"
         />
+        {showCommentPopup && (
+          <div className="time-row__comment-popup-overlay" onClick={handlePopupClose}>
+            <div className="time-row__comment-popup" onClick={(e) => e.stopPropagation()}>
+              <textarea
+                className="time-row__comment-popup-textarea"
+                value={popupComment}
+                onChange={handlePopupCommentChange}
+                autoFocus
+                placeholder="Введите комментарий..."
+              />
+              <div className="time-row__comment-popup-actions">
+                <button type="button" className="time-row__comment-popup-btn time-row__comment-popup-btn--cancel" onClick={handlePopupClose}>
+                  Отмена
+                </button>
+                <button type="button" className="time-row__comment-popup-btn time-row__comment-popup-btn--save" onClick={handlePopupSave}>
+                  Сохранить
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
