@@ -195,7 +195,7 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
       const deltaX = moveEvent.clientX - resizeStartRef.current.x;
       const deltaY = moveEvent.clientY - resizeStartRef.current.y;
       setTextareaSize({
-        width: Math.max(400, resizeStartRef.current.width + deltaX),
+        width: Math.min(700, Math.max(400, resizeStartRef.current.width + deltaX)),
         height: Math.max(150, resizeStartRef.current.height + deltaY)
       });
     };

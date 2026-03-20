@@ -277,6 +277,7 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
 
   &__comment-popup-textarea {
     width: 100%;
+    max-width: 100%;
     min-width: 400px;
     min-height: 150px;
     padding: $spacing-md;
@@ -292,7 +293,7 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
     line-height: 1.5;
     overflow-wrap: break-word;
     word-break: break-word;
-    overflow: hidden;
+    overflow: auto;
 
     &:focus {
       outline: none;
