@@ -100,25 +100,30 @@
     &-label {
       display: flex;
       align-items: center;
-      gap: 4px;
-      font-size: $font-size-xs;
+      gap: $spacing-sm;
+      font-size: $font-size-sm;
       color: var(--color-text-muted);
+      font-weight: 500;
 
       svg {
-        width: 1.2em;
-        height: 1.2em;
+        padding: 6px;
+        background: var(--color-bg);
+        border-radius: $border-radius-sm;
+        width: 3em;
+        height: 3em;
         stroke: var(--color-secondary);
       }
     }
 
     &-value {
-      font-size: $font-size-sm;
+      font-size: $font-size-lg;
       font-weight: 600;
       color: var(--color-text-main);
     }
 
     &--overtime {
       .earnings__item-label svg {
+        background: var(--color-success-light);
         stroke: var(--color-success);
       }
 
@@ -129,6 +134,7 @@
 
     &--undertime {
       .earnings__item-label svg {
+        background: var(--color-danger-light);
         stroke: var(--color-danger);
       }
 
