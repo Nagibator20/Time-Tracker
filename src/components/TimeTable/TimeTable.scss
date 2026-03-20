@@ -271,6 +271,8 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
     max-width: 700px;
     box-shadow: $shadow-lg;
     animation: popupSlideIn 0.2s ease;
+    display: flex;
+    flex-direction: column;
   }
 
   &__comment-popup-textarea {
@@ -290,6 +292,7 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
     line-height: 1.5;
     overflow-wrap: break-word;
     word-break: break-word;
+    overflow: hidden;
 
     &:focus {
       outline: none;
@@ -299,10 +302,10 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
 
   &__comment-popup-resize {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 16px;
-    height: 16px;
+    bottom: 8px;
+    right: 8px;
+    width: 20px;
+    height: 20px;
     cursor: se-resize;
     display: flex;
     align-items: center;
