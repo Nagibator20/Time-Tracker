@@ -86,6 +86,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: $spacing-sm;
+    justify-content: center;
   }
 
   &__item {
