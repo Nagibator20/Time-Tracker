@@ -287,6 +287,8 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
     resize: both;
     box-sizing: border-box;
     line-height: 1.5;
+    overflow-wrap: break-word;
+    word-break: break-word;
 
     &:focus {
       outline: none;
