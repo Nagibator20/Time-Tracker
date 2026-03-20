@@ -340,15 +340,34 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
 
     &::before {
       content: '';
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
+      position: absolute;
+      width: 2px;
+      height: 8px;
       background: var(--color-text-muted);
+      border-radius: 1px;
       opacity: 0.5;
       transition: opacity 0.2s;
+      right: 3px;
+      bottom: 3px;
+      transform: rotate(45deg);
     }
 
-    &:hover::before {
+    &::after {
+      content: '';
+      position: absolute;
+      width: 2px;
+      height: 8px;
+      background: var(--color-text-muted);
+      border-radius: 1px;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+      right: 3px;
+      bottom: 3px;
+      transform: rotate(-45deg);
+    }
+
+    &:hover::before,
+    &:hover::after {
       opacity: 1;
     }
   }
