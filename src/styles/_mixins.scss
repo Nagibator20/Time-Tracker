@@ -1,0 +1,50 @@
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@mixin input-base {
+  padding: $spacing-xs $spacing-sm;
+  border: 1px solid var(--color-border);
+  border-radius: $border-radius-sm;
+  font-size: $font-size-base;
+  font-family: $font-family;
+  transition: $transition;
+  background-color: var(--color-bg);
+  color: var(--color-text-main);
+  
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-light);
+  }
+  
+  &--error {
+    border-color: var(--color-danger);
+  }
+}
+
+@mixin button-base {
+  padding: $spacing-sm $spacing-md;
+  border: none;
+  border-radius: $border-radius-md;
+  cursor: pointer;
+  font-size: $font-size-base;
+  font-family: $font-family;
+  transition: $transition;
+  
+  &:hover {
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}

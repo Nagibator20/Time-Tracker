@@ -1,0 +1,76 @@
+.delete-modal {
+  max-width: 400px !important;
+  min-width: unset !important;
+  text-align: center;
+
+  &__icon {
+    margin-bottom: $spacing-lg;
+    color: var(--color-danger);
+    display: flex;
+    justify-content: center;
+    
+    svg {
+      padding: $spacing-md;
+      background: var(--color-danger-light);
+      border-radius: 50%;
+      width: 64px;
+      height: 64px;
+    }
+  }
+
+  &__text {
+    font-size: $font-size-md;
+    color: var(--color-text-main);
+    margin-bottom: $spacing-sm;
+
+    strong {
+      color: var(--color-danger);
+    }
+  }
+
+  &__hint {
+    font-size: $font-size-sm;
+    color: var(--color-text-muted);
+    margin-bottom: $spacing-xl;
+    line-height: 1.4;
+  }
+
+  &__actions {
+    display: flex;
+    gap: $spacing-md;
+    
+    @media (max-width: 400px) {
+      flex-direction: column;
+    }
+  }
+
+  &__btn {
+    @include button-base;
+    flex: 1;
+    font-weight: 600;
+    border-radius: $border-radius-md;
+    padding: $spacing-md;
+    cursor: pointer;
+    border: none;
+
+    &--cancel {
+      background: var(--color-bg);
+      color: var(--color-text-muted);
+      border: 1px solid var(--color-border);
+
+      &:hover {
+        background: var(--color-hover-bg);
+        color: var(--color-text-main);
+      }
+    }
+
+    &--confirm {
+      background: var(--color-danger);
+      color: white;
+
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+  }
+}

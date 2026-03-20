@@ -1,0 +1,95 @@
+// Modern Palette - Light Theme
+$color-bg: #f8fafc;
+$color-card: #ffffff;
+$color-primary: #6366f1;
+$color-primary-light: rgba(99, 102, 241, 0.1);
+$color-secondary: #64748b;
+$color-success: #10b981;
+$color-success-light: rgba(16, 185, 129, 0.1);
+$color-danger: #ef4444;
+$color-danger-light: rgba(239, 68, 68, 0.1);
+$color-warning: #f59e0b;
+$color-text-main: #1e293b;
+$color-text-muted: #64748b;
+$color-border: #e2e8f0;
+$color-hover-bg: #fafbff;
+$color-row-hover: rgba($color-primary, 0.04);
+
+// Status colors
+$color-overtime: $color-success;
+$color-undertime: $color-danger;
+$color-normal: $color-secondary;
+
+$font-family: 'Inter', 'Roboto', system-ui, -apple-system, sans-serif;
+$font-family-mono: 'JetBrains Mono', 'Fira Code', 'Roboto Mono', monospace;
+$font-size-xs: 12px;
+$font-size-sm: 13px;
+$font-size-base: 14px;
+$font-size-md: 16px;
+$font-size-lg: 18px;
+$font-size-xl: 24px;
+
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-md: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+
+$border-radius-sm: 6px;
+$border-radius-md: 12px;
+$border-radius-lg: 16px;
+
+$shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+$shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+$shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+
+$transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+// Dark Theme Variables
+[data-theme="dark"] {
+  $color-bg: #0f172a;
+  $color-card: #1e293b;
+  $color-primary-light: rgba(99, 102, 241, 0.2);
+  $color-secondary: #94a3b8;
+  $color-success-light: rgba(16, 185, 129, 0.2);
+  $color-danger-light: rgba(239, 68, 68, 0.2);
+  $color-text-main: #f1f5f9;
+  $color-text-muted: #94a3b8;
+  $color-border: #334155;
+  $color-hover-bg: #1e293b;
+  $color-row-hover: rgba($color-primary, 0.1);
+}
+
+// CSS Custom Properties
+:root {
+  --color-bg: #{$color-bg};
+  --color-card: #{$color-card};
+  --color-primary: #{$color-primary};
+  --color-primary-light: #{$color-primary-light};
+  --color-secondary: #{$color-secondary};
+  --color-success: #{$color-success};
+  --color-success-light: #{$color-success-light};
+  --color-danger: #{$color-danger};
+  --color-danger-light: #{$color-danger-light};
+  --color-warning: #{$color-warning};
+  --color-text-main: #{$color-text-main};
+  --color-text-muted: #{$color-text-muted};
+  --color-border: #{$color-border};
+  --color-hover-bg: #{$color-hover-bg};
+  --color-row-hover: #{$color-row-hover};
+}
+
+// Dark Theme Override
+[data-theme="dark"] {
+  --color-bg: #0f172a;
+  --color-card: #1e293b;
+  --color-primary-light: rgba(99, 102, 241, 0.2);
+  --color-secondary: #94a3b8;
+  --color-success-light: rgba(16, 185, 129, 0.2);
+  --color-danger-light: rgba(239, 68, 68, 0.2);
+  --color-text-main: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-border: #334155;
+  --color-hover-bg: #1e293b;
+  --color-row-hover: rgba(99, 102, 241, 0.1);
+}

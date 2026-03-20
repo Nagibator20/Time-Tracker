@@ -1,0 +1,38 @@
+.time-input {
+  width: 72px;
+  position: relative;
+
+  &__field {
+    @include input-base;
+    width: 100%;
+    text-align: center;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: $border-radius-sm;
+    color: var(--color-text-main);
+    font-weight: 600;
+    padding: 6px 4px;
+    letter-spacing: 0.05em;
+    transition: $transition;
+
+    &:hover {
+      border-color: var(--color-secondary);
+    }
+
+    &:focus {
+      background: var(--color-card);
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-light);
+    }
+
+    &::-webkit-calendar-picker-indicator {
+      display: none;
+    }
+
+    &--error {
+      border-color: var(--color-danger) !important;
+      color: var(--color-danger);
+      background-color: var(--color-danger-light) !important;
+    }
+  }
+}

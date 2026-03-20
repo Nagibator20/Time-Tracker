@@ -1,0 +1,24 @@
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: var(--color-primary-light);
+  border: 1px solid rgba(var(--color-primary), 0.1);
+  border-radius: $border-radius-md;
+  cursor: pointer;
+  color: var(--color-primary);
+  transition: $transition;
+
+  &:hover {
+    background-color: var(--color-primary);
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}

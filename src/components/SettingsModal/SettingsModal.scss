@@ -1,0 +1,109 @@
+.settings-modal {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+  }
+
+  &__section-title {
+    font-size: $font-size-base;
+    font-weight: 600;
+    color: var(--color-text-main);
+    margin: 0;
+    padding-bottom: $spacing-xs;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $spacing-md;
+    background: var(--color-bg);
+    border-radius: $border-radius-md;
+    border: 1px solid var(--color-border);
+  }
+
+  &__label {
+    font-size: $font-size-base;
+    font-weight: 500;
+    color: var(--color-text-main);
+  }
+
+  &__theme-btn {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-sm $spacing-md;
+    background: var(--color-primary-light);
+    border: 1px solid rgba(var(--color-primary), 0.1);
+    border-radius: $border-radius-md;
+    cursor: pointer;
+    color: var(--color-primary);
+    font-size: $font-size-sm;
+    font-weight: 500;
+    transition: $transition;
+
+    &:hover {
+      background: var(--color-primary);
+      color: white;
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+  }
+
+  &__buttons {
+    display: flex;
+    gap: $spacing-md;
+  }
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-sm;
+    flex: 1;
+    padding: $spacing-md;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: $border-radius-md;
+    cursor: pointer;
+    font-size: $font-size-sm;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    transition: $transition;
+
+    &:hover {
+      transform: translateY(-1px);
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+
+    &--export {
+      background: var(--color-success-light);
+      color: var(--color-success);
+      border-color: rgba(var(--color-success), 0.1);
+
+      &:hover {
+        background: var(--color-success);
+        color: white;
+      }
+    }
+
+    &--import {
+      &:hover {
+        background: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+      }
+    }
+  }
+}

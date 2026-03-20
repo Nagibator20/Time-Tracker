@@ -1,0 +1,58 @@
+.time-row {
+  transition: $transition;
+
+  &:hover {
+    background-color: var(--color-row-hover);
+  }
+
+  &__cell {
+    padding: $spacing-md;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(var(--color-border), 0.5);
+  }
+
+  &__date {
+    display: block;
+    font-weight: 600;
+    font-size: $font-size-base;
+    color: var(--color-text-main);
+  }
+
+  &__day {
+    display: block;
+    font-size: $font-size-xs;
+    color: var(--color-text-muted);
+  }
+
+  &__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: $font-size-xs;
+    font-weight: 600;
+
+    &--overtime {
+      background: var(--color-success-light);
+      color: var(--color-success);
+    }
+
+    &--undertime {
+      background: var(--color-danger-light);
+      color: var(--color-danger);
+    }
+
+    &--normal {
+      background: var(--color-bg);
+      color: var(--color-secondary);
+    }
+  }
+
+  &__error {
+    display: block;
+    color: var(--color-danger);
+    font-size: 10px;
+    margin-top: 4px;
+  }
+}
