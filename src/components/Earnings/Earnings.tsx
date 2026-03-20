@@ -162,7 +162,7 @@ const EarningsComponent: React.FC<EarningsProps> = ({
             </svg>
             Норма в месяце:
           </span>
-          <span className="earnings__item-value">{formatHours(workingHoursInMonth)}</span>
+          <span className="earnings__item-value">{workingHoursInMonth}</span>
         </div>
       </div>
     </div>
