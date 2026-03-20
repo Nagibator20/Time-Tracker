@@ -330,13 +330,17 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
     height: 24px;
     cursor: se-resize;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 4px;
+    border-bottom-right-radius: inherit;
+    margin-right: -1px;
+    margin-bottom: -1px;
 
     &::before {
       content: '';
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-right: 2px solid var(--color-text-muted);
       border-bottom: 2px solid var(--color-text-muted);
       opacity: 0.5;
