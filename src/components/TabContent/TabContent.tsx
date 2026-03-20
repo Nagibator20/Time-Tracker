@@ -21,8 +21,8 @@ export const TabContent: React.FC<TabContentProps> = ({ tab }) => {
     month: tab.month
   });
   
-  const handleUpdateRecord = useCallback((date: string, timeIn: string | undefined, timeOut: string | undefined) => {
-    updateRecord(date, { timeIn, timeOut });
+  const handleUpdateRecord = useCallback((date: string, timeIn: string | undefined, timeOut: string | undefined, comment?: string) => {
+    updateRecord(date, { timeIn, timeOut, comment });
   }, [updateRecord]);
 
   const handleExport = useCallback(() => {

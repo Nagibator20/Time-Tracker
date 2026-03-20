@@ -9,13 +9,14 @@ import { CurrencyValue } from '../CurrencyValue';
 
 interface TimeRowProps {
   record: TimeRecord;
-  onUpdate: (date: string, timeIn: string | undefined, timeOut: string | undefined) => void;
+  onUpdate: (date: string, timeIn: string | undefined, timeOut: string | undefined, comment?: string) => void;
 }
 
 const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
   const { settings } = useDatabase();
   const [timeIn, setTimeIn] = useState(record.timeIn || '');
   const [timeOut, setTimeOut] = useState(record.timeOut || '');
+  const [comment, setComment] = useState(record.comment || '');
   const [timeInError, setTimeInError] = useState<string | null>(null);
   const [timeOutError, setTimeOutError] = useState<string | null>(null);
   
@@ -26,6 +27,7 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
   useEffect(() => {
     setTimeIn(record.timeIn || '');
     setTimeOut(record.timeOut || '');
+    setComment(record.comment || '');
     setTimeInError(null);
     setTimeOutError(null);
   }, [record]);
@@ -48,11 +50,11 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
     setTimeOutError(null);
   }, []);
 
-  const saveAndUpdate = useCallback((finalTimeIn: string | undefined, finalTimeOut: string | undefined) => {
+  const saveAndUpdate = useCallback((finalTimeIn: string | undefined, finalTimeOut: string | undefined, finalComment?: string) => {
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
-    onUpdate(record.date, finalTimeIn, finalTimeOut);
+    onUpdate(record.date, finalTimeIn, finalTimeOut, finalComment);
   }, [record.date, onUpdate]);
 
   const handleTimeInBlur = useCallback(() => {
@@ -132,6 +134,24 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
     }
   }, [handleTimeOutBlur]);
 
+  const handleCommentChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setComment(e.target.value);
+  }, []);
+
+  const handleCommentBlur = useCallback(() => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    saveAndUpdate(timeIn || undefined, timeOut || undefined, comment);
+  }, [timeIn, timeOut, comment, saveAndUpdate]);
+
+  const handleCommentKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleCommentBlur();
+      (e.target as HTMLInputElement).blur();
+    }
+  }, [handleCommentBlur]);
+
   const getStatusClass = (): string => {
     if (!record.timeIn || !record.timeOut) return '';
     if (record.hoursWorked > settings.standardHours) return 'time-row__status--overtime';
@@ -205,6 +225,18 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
       </div>
       <div className="time-row__cell time-row__cell--earnings" role="cell">
         {record.dailyEarnings > 0 ? <CurrencyValue amount={record.dailyEarnings} /> : '—'}
+      </div>
+      <div className="time-row__cell">
+        <input
+          type="text"
+          className="time-row__comment-input"
+          value={comment}
+          onChange={handleCommentChange}
+          onBlur={handleCommentBlur}
+          onKeyDown={handleCommentKeyDown}
+          placeholder="..."
+          aria-label="Комментарий"
+        />
       </div>
     </div>
   );

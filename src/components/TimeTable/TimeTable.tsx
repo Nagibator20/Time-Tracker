@@ -5,12 +5,12 @@ import './TimeTable.scss';
 
 interface TimeTableProps {
   records: TimeRecord[];
-  onUpdateRecord: (date: string, timeIn: string | undefined, timeOut: string | undefined) => void;
+  onUpdateRecord: (date: string, timeIn: string | undefined, timeOut: string | undefined, comment?: string) => void;
 }
 
 const TimeTableComponent: React.FC<TimeTableProps> = ({ records, onUpdateRecord }) => {
-  const handleUpdate = useCallback((date: string, timeIn: string | undefined, timeOut: string | undefined) => {
-    onUpdateRecord(date, timeIn, timeOut);
+  const handleUpdate = useCallback((date: string, timeIn: string | undefined, timeOut: string | undefined, comment?: string) => {
+    onUpdateRecord(date, timeIn, timeOut, comment);
   }, [onUpdateRecord]);
 
   return (
@@ -23,6 +23,7 @@ const TimeTableComponent: React.FC<TimeTableProps> = ({ records, onUpdateRecord 
           <div className="time-table__cell" role="columnheader">Часы</div>
           <div className="time-table__cell" role="columnheader">Статус</div>
           <div className="time-table__cell time-table__cell--earnings" role="columnheader">Заработок</div>
+          <div className="time-table__cell" role="columnheader">Комментарий</div>
         </div>
         <div className="time-table__body" role="rowgroup">
           {records.map((record) => (

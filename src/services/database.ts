@@ -201,6 +201,7 @@ class DatabaseService {
             overtimeHours: 0,
             undertimeHours: 0,
             dailyEarnings: 0,
+            comment: '',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
           };
@@ -242,6 +243,7 @@ class DatabaseService {
       overtimeHours,
       undertimeHours,
       dailyEarnings,
+      comment: input.comment !== undefined ? input.comment : this.data.timeRecords[index].comment,
       updatedAt: new Date().toISOString()
     };
 

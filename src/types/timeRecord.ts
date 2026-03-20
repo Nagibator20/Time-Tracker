@@ -9,6 +9,7 @@ export interface TimeRecord {
   overtimeHours: number;
   undertimeHours: number;
   dailyEarnings: number;
+  comment: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -16,4 +17,5 @@ export interface TimeRecord {
 export interface TimeRecordInput {
   timeIn?: string;
   timeOut?: string;
+  comment?: string;
 }
