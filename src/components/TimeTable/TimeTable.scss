@@ -1,6 +1,6 @@
 @import '../../styles/_variables.scss';
 
-$time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 150px;
+$time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
 
 .time-table-wrapper {
   background-color: var(--color-card);
@@ -30,7 +30,8 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 150px;
       grid-template-columns: 120px 80px 80px 60px;
 
       .time-table__cell:nth-child(5),
-      .time-table__cell:nth-child(6) {
+      .time-table__cell:nth-child(6),
+      .time-table__cell:nth-child(7) {
         display: none;
       }
     }
@@ -92,7 +93,8 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 150px;
     grid-template-columns: 120px 80px 80px 60px;
 
     .time-row__cell:nth-child(5),
-    .time-row__cell:nth-child(6) {
+    .time-row__cell:nth-child(6),
+    .time-row__cell:nth-child(7) {
       display: none;
     }
   }
