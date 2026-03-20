@@ -104,12 +104,6 @@
       box-shadow: $shadow-md;
     }
 
-    &-content {
-      display: flex;
-      flex-direction: column;
-      gap: $spacing-sm;
-    }
-
     &-label {
       display: flex;
       align-items: center;
@@ -132,7 +126,6 @@
       font-size: $font-size-lg;
       font-weight: 600;
       color: var(--color-text-main);
-      text-align: center;
     }
 
     &--overtime {
