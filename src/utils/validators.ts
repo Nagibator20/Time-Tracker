@@ -2,7 +2,6 @@ import { parseTime } from '../services/dateUtils';
 
 export interface ValidationResult {
   isValid: boolean;
-  isIncomplete?: boolean;
   error?: string;
   formatted?: string;
 }
@@ -10,14 +9,6 @@ export interface ValidationResult {
 export const validateTime = (input: string): ValidationResult => {
   if (!input.trim()) {
     return { isValid: true };
-  }
-
-  if (/^\d{1,2}:?-$/.test(input) || /^\d{1,2}:[^-]*-$/.test(input)) {
-    return { isValid: false, isIncomplete: true, error: 'Время введено не полностью' };
-  }
-
-  if (/^\d{1,2}:?$/.test(input) && !input.includes(':')) {
-    return { isValid: false, isIncomplete: true, error: 'Время введено не полностью' };
   }
 
   let normalized = input;
