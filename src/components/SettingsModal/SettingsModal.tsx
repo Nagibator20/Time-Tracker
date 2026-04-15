@@ -1,67 +1,23 @@
-import React, { memo, useCallback, useRef } from 'react';
+import React, { memo } from 'react';
 import { useAppStore } from '../../store';
 import { HourlyRateModal } from '../HourlyRate';
+import { useBackup } from '../../hooks/useBackup';
 import './SettingsModal.scss';
 
 interface SettingsModalProps {
   onClose?: () => void;
+  showToast: (message: string, type?: 'error' | 'success' | 'warning') => void;
 }
 
-const SettingsModalComponent: React.FC<SettingsModalProps> = () => {
+const SettingsModalComponent: React.FC<SettingsModalProps> = ({ showToast }) => {
   const { theme, toggleTheme } = useAppStore();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleExportBackup = useCallback(() => {
-    const data = localStorage.getItem('time_tracker_data');
-    if (data) {
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `time_tracker_backup_${new Date().toISOString().split('T')[0]}.json`;
-      link.click();
-      URL.revokeObjectURL(url);
-    }
-  }, []);
-
-  const handleImportBackup = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
-
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const data = event.target?.result as string;
-        const parsed = JSON.parse(data);
-        
-        if (parsed.version && parsed.tabs && parsed.timeRecords && parsed.settings) {
-          if (confirm('Вы уверены? Это заменит все текущие данные.')) {
-            localStorage.setItem('time_tracker_data', data);
-            window.location.reload();
-          }
-        } else {
-          alert('Неверный формат файла резервной копии.');
-        }
-      } catch {
-        alert('Ошибка при чтении файла.');
-      }
-    };
-    reader.readAsText(file);
-    
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  }, []);
+  const { handleExportBackup, handleImportBackup, FileInput } = useBackup({ showToast });
 
   return (
     <div className="settings-modal">
       <div className="settings-modal__section">
         <h4 className="settings-modal__section-title">Оплата труда</h4>
-        <HourlyRateModal onClose={() => {}} />
+        <HourlyRateModal onClose={() => { }} />
       </div>
 
       <div className="settings-modal__section">
@@ -75,14 +31,34 @@ const SettingsModalComponent: React.FC<SettingsModalProps> = () => {
           >
             {theme === 'light' ? (
               <>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                 </svg>
                 Тёмная
               </>
             ) : (
               <>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <circle cx="12" cy="12" r="5"></circle>
                   <line x1="12" y1="1" x2="12" y2="3"></line>
                   <line x1="12" y1="21" x2="12" y2="23"></line>
@@ -101,39 +77,143 @@ const SettingsModalComponent: React.FC<SettingsModalProps> = () => {
       </div>
 
       <div className="settings-modal__section">
-        <h4 className="settings-modal__section-title">Резервное копирование</h4>
+        <h4 className="settings-modal__section-title">Сохранение и вывод</h4>
         <div className="settings-modal__buttons">
           <button
             className="settings-modal__btn settings-modal__btn--export"
             onClick={handleExportBackup}
+            aria-label="Экспорт резервной копии"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="7 10 12 15 17 10"></polyline>
               <line x1="12" y1="15" x2="12" y2="3"></line>
             </svg>
-            Экспорт
+            Backup
           </button>
           <button
             className="settings-modal__btn settings-modal__btn--import"
             onClick={handleImportBackup}
+            aria-label="Импорт резервной копии"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
               <polyline points="17 8 12 3 7 8"></polyline>
               <line x1="12" y1="3" x2="12" y2="15"></line>
             </svg>
-            Импорт
+            Restore
+          </button>
+          <button
+            className="settings-modal__btn settings-modal__btn--csv"
+            onClick={() => {
+              import('../../utils/csvExport').then(({ exportToCSV }) => {
+                const state = useAppStore.getState();
+                const activeTab = state.tabs.find(t => t.id === state.activeTabId) || state.tabs[0];
+
+                if (activeTab) {
+                  const records = state.timeRecords
+                    .filter(r => r.tabId === activeTab.id)
+                    .sort((a, b) => a.date.localeCompare(b.date));
+                  exportToCSV(records, activeTab.name);
+                  showToast('CSV файл экспортирован', 'success');
+                } else {
+                  showToast('Нет активного таба', 'warning');
+                }
+              });
+            }}
+            aria-label="Экспорт в CSV"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="8" y1="13" x2="16" y2="13"></line>
+              <line x1="8" y1="17" x2="16" y2="17"></line>
+            </svg>
+            CSV
+          </button>
+          <button
+            className="settings-modal__btn settings-modal__btn--pdf"
+            onClick={() => {
+              import('../../utils/pdfExport').then(({ exportToPDF }) => {
+                const state = useAppStore.getState();
+                const activeTab = state.tabs.find(t => t.id === state.activeTabId) || state.tabs[0];
+
+                if (activeTab) {
+                  const records = state.timeRecords
+                    .filter(r => r.tabId === activeTab.id)
+                    .sort((a, b) => a.date.localeCompare(b.date));
+                  exportToPDF({ records, tab: activeTab, settings: state.settings });
+                  showToast('PDF формируется...', 'success');
+                } else {
+                  showToast('Нет активного таба', 'warning');
+                }
+              });
+            }}
+            aria-label="Экспорт в PDF"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <text
+                x="7"
+                y="17"
+                fontSize="6"
+                fontWeight="bold"
+                fill="currentColor"
+                stroke="none"
+                fontFamily="Arial, sans-serif"
+              >
+                PDF
+              </text>
+            </svg>
+            PDF
           </button>
         </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json"
-          onChange={handleFileChange}
-          style={{ display: 'none' }}
-          aria-hidden="true"
-        />
+        <FileInput />
       </div>
     </div>
   );

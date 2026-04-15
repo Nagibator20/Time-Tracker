@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -7,9 +7,10 @@ import {
   Title,
   Tooltip,
   Legend,
+  TooltipItem,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
-import { db } from "../../services/database";
+import { useAppStore } from "../../store";
 import { getMonthNameShort, getMonthName } from "../../services/dateUtils";
 import { formatHours } from "../../utils/formatters";
 import { CurrencyValue } from "../CurrencyValue";
@@ -27,12 +28,61 @@ ChartJS.register(
 
 export const MonthlyReport: React.FC = () => {
   const { settings } = useDatabase();
+  const timeRecords = useAppStore((s) => s.timeRecords);
+  const tabs = useAppStore((s) => s.tabs);
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSelectYear = useCallback((year: number) => {
+    setSelectedYear(year);
+    setIsDropdownOpen(false);
+  }, []);
 
   const stats = useMemo(() => {
-    return db.getMonthlyStats(selectedYear);
-  }, [selectedYear]);
+    const monthlyStats = [];
+    for (let month = 0; month < 12; month++) {
+      let totalHours = 0;
+      let totalOvertime = 0;
+      let totalUndertime = 0;
+      let totalEarnings = 0;
+      let workingDays = 0;
+
+      const monthStr = (month + 1).toString().padStart(2, '0');
+      
+      timeRecords
+        .filter(r => r.date.startsWith(`${selectedYear}-${monthStr}`))
+        .forEach(r => {
+          totalHours += r.hoursWorked;
+          totalOvertime += r.overtimeHours;
+          totalUndertime += r.undertimeHours;
+          totalEarnings += r.dailyEarnings;
+          if (r.timeIn && r.timeOut) workingDays++;
+        });
+
+      monthlyStats.push({
+        year: selectedYear,
+        month,
+        totalHours,
+        totalOvertime,
+        totalUndertime,
+        totalEarnings,
+        workingDays
+      });
+    }
+    return monthlyStats;
+  }, [selectedYear, timeRecords]);
 
   const chartData = useMemo(
     () => ({
@@ -60,9 +110,9 @@ export const MonthlyReport: React.FC = () => {
         },
         tooltip: {
           callbacks: {
-            label: (context: any) => {
+            label: (context: TooltipItem<'bar'>) => {
               const value = context.raw as number;
-              return `Заработок: ${value.toLocaleString("ru-RU")}`;
+              return `Заработок: ${value.toLocaleString("ru-RU")} ${settings.currency}`;
             },
           },
         },
@@ -71,7 +121,7 @@ export const MonthlyReport: React.FC = () => {
         y: {
           beginAtZero: true,
           ticks: {
-            callback: (value: any) => `${value.toLocaleString("ru-RU")}`,
+            callback: (value: number | string) => `${Number(value).toLocaleString("ru-RU")}`,
           },
         },
       },
@@ -92,26 +142,43 @@ export const MonthlyReport: React.FC = () => {
   }, [stats]);
 
   const years = useMemo(() => {
-    const tabYears = db.getTabs().map((t) => t.year);
+    const tabYears = tabs.map((t) => t.year);
     const uniqueYears = Array.from(new Set([currentYear, ...tabYears]));
     return uniqueYears.sort((a, b) => a - b);
-  }, [currentYear]);
+  }, [currentYear, tabs]);
 
   return (
     <div className="monthly-report">
       <div className="monthly-report__header">
         <h2 className="monthly-report__title">Отчёт по месяцам</h2>
-        <select
-          className="monthly-report__year-select"
-          value={selectedYear}
-          onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-        >
-          {years.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
+        <div className="monthly-report__year-select" ref={dropdownRef}>
+          <button
+            className="monthly-report__year-select-trigger"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            aria-expanded={isDropdownOpen}
+            aria-haspopup="listbox"
+          >
+            {selectedYear}
+            <svg className="monthly-report__year-select-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none">
+              <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          {isDropdownOpen && (
+            <ul className="monthly-report__year-select-dropdown" role="listbox">
+              {years.map((year) => (
+                <li
+                  key={year}
+                  className={`monthly-report__year-select-option ${year === selectedYear ? 'monthly-report__year-select-option--selected' : ''}`}
+                  onClick={() => handleSelectYear(year)}
+                  role="option"
+                  aria-selected={year === selectedYear}
+                >
+                  {year}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
 
       <div className="monthly-report__chart">

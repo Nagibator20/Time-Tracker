@@ -1,16 +1,23 @@
-import React, { useState, useCallback, useEffect, useRef, memo } from 'react';
+import React, { useState, useCallback, useEffect, useRef, memo, useMemo } from 'react';
+import ReactDOM from 'react-dom';
 import { TimeRecord } from '../../types';
 import { formatDateShort, getDayNameShort } from '../../services/dateUtils';
 import { validateTime, validateTimeRange } from '../../utils/validators';
 import { formatHours } from '../../utils/formatters';
+import { sanitizeComment } from '../../utils/htmlEscaping';
 import { useDatabase } from '../../hooks/useDatabase';
 import { TimeInput } from '../TimeInput';
 import { CurrencyValue } from '../CurrencyValue';
 
-interface TimeRowProps {
+type TimeRowProps = {
   record: TimeRecord;
-  onUpdate: (date: string, timeIn: string | undefined, timeOut: string | undefined, comment?: string) => void;
-}
+  onUpdate: (
+    date: string,
+    timeIn: string | undefined,
+    timeOut: string | undefined,
+    comment?: string
+  ) => void;
+};
 
 const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
   const { settings } = useDatabase();
@@ -19,16 +26,19 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
   const [comment, setComment] = useState(record.comment || '');
   const [timeInError, setTimeInError] = useState<string | null>(null);
   const [timeOutError, setTimeOutError] = useState<string | null>(null);
-  const [showCommentPopup, setShowCommentPopup] = useState(false);
-  const [popupComment, setPopupComment] = useState('');
-  const [textareaSize, setTextareaSize] = useState({ width: 400, height: 150 });
-  
+  const [showCommentModal, setShowCommentModal] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [modalSize, setModalSize] = useState({ width: 400, height: 150 });
+
   const timeInRef = useRef<HTMLInputElement>(null);
   const timeOutRef = useRef<HTMLInputElement>(null);
   const commentInputRef = useRef<HTMLInputElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const commentTextareaRef = useRef<HTMLTextAreaElement>(null);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const resizeStartRef = useRef<{ x: number; y: number; width: number; height: number } | null>(null);
+  const resizeStartRef = useRef<{ x: number; y: number; width: number; height: number } | null>(
+    null
+  );
+  const isResizingRef = useRef(false);
 
   useEffect(() => {
     setTimeIn(record.timeIn || '');
@@ -36,7 +46,7 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
     setComment(record.comment || '');
     setTimeInError(null);
     setTimeOutError(null);
-  }, [record]);
+  }, [record.id, record.timeIn, record.timeOut, record.comment]);
 
   useEffect(() => {
     return () => {
@@ -56,89 +66,114 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
     setTimeOutError(null);
   }, []);
 
-  const saveAndUpdate = useCallback((finalTimeIn: string | undefined, finalTimeOut: string | undefined, finalComment?: string) => {
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-    onUpdate(record.date, finalTimeIn, finalTimeOut, finalComment);
-  }, [record.date, onUpdate]);
+  const saveAndUpdate = useCallback(
+    (finalTimeIn: string | undefined, finalTimeOut: string | undefined, finalComment?: string) => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      onUpdate(record.date, finalTimeIn, finalTimeOut, finalComment);
+    },
+    [record.date, onUpdate]
+  );
+
+  const validateAndSave = useCallback(
+    (valTimeIn: string, valTimeOut: string) => {
+      if (!valTimeIn) {
+        saveAndUpdate(undefined, undefined);
+        return;
+      }
+
+      const result = validateTime(valTimeIn);
+      if (!result.isValid) {
+        setTimeInError(result.error || 'Неверный формат времени');
+        return;
+      }
+
+      const finalTimeIn = result.formatted || valTimeIn;
+      if (finalTimeIn && valTimeOut) {
+        const rangeResult = validateTimeRange(finalTimeIn, valTimeOut);
+        if (!rangeResult.isValid) {
+          setTimeOutError(rangeResult.error || 'Ошибка валидации');
+          return;
+        }
+      }
+      saveAndUpdate(finalTimeIn, finalTimeIn ? valTimeOut : undefined);
+    },
+    [saveAndUpdate]
+  );
 
   const handleTimeInBlur = useCallback(() => {
-    if (!timeIn) {
-      saveAndUpdate(undefined, undefined);
-      return;
-    }
+    validateAndSave(timeIn, timeOut);
+  }, [timeIn, timeOut, validateAndSave]);
 
-    const result = validateTime(timeIn);
-    if (!result.isValid) {
-      setTimeInError(result.error || 'Неверный формат времени');
-      return;
-    }
-    
-    const finalTime = result.formatted || timeIn;
-    if (finalTime && timeOut) {
-      const rangeResult = validateTimeRange(finalTime, timeOut);
-      if (!rangeResult.isValid) {
-        setTimeOutError(rangeResult.error || 'Ошибка валидации');
+  const validateAndSaveOut = useCallback(
+    (valTimeIn: string, valTimeOut: string) => {
+      if (!valTimeOut) {
+        saveAndUpdate(valTimeIn || undefined, undefined);
         return;
       }
-    }
-    saveAndUpdate(finalTime, finalTime ? timeOut : undefined);
-  }, [timeIn, timeOut, record.date, saveAndUpdate]);
+
+      const result = validateTime(valTimeOut);
+      if (!result.isValid) {
+        setTimeOutError(result.error || 'Неверный формат времени');
+        return;
+      }
+
+      const finalTimeOut = result.formatted || valTimeOut;
+      if (finalTimeOut && valTimeIn) {
+        const rangeResult = validateTimeRange(valTimeIn, finalTimeOut);
+        if (!rangeResult.isValid) {
+          setTimeOutError(rangeResult.error || 'Ошибка валидации');
+          return;
+        }
+      }
+      saveAndUpdate(valTimeIn || undefined, finalTimeOut);
+    },
+    [saveAndUpdate]
+  );
 
   const handleTimeOutBlur = useCallback(() => {
-    if (!timeOut) {
-      saveAndUpdate(timeIn || undefined, undefined);
-      return;
-    }
+    validateAndSaveOut(timeIn, timeOut);
+  }, [timeIn, timeOut, validateAndSaveOut]);
 
-    const result = validateTime(timeOut);
-    if (!result.isValid) {
-      setTimeOutError(result.error || 'Неверный формат времени');
-      return;
-    }
-    
-    const finalTime = result.formatted || timeOut;
-    if (finalTime && timeIn) {
-      const rangeResult = validateTimeRange(timeIn, finalTime);
-      if (!rangeResult.isValid) {
-        setTimeOutError(rangeResult.error || 'Ошибка валидации');
-        return;
-      }
-    }
-    saveAndUpdate(timeIn || undefined, finalTime);
-  }, [timeIn, timeOut, record.date, saveAndUpdate]);
-
-  const handleTimeInKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleTimeInBlur();
-      timeOutRef.current?.focus();
-    } else if (e.key === 'ArrowRight') {
-      const input = e.target as HTMLInputElement;
-      const length = input.value.length;
-      if (length === 2 && !input.value.includes(':')) {
-        return;
-      }
-      if (length === 5) {
-        e.preventDefault();
+  const handleTimeInKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        const currentValue = (e.target as HTMLInputElement).value;
+        validateAndSave(currentValue, timeOut);
         timeOutRef.current?.focus();
+      } else if (e.key === 'ArrowRight') {
+        const input = e.target as HTMLInputElement;
+        const length = input.value.length;
+        if (length === 2 && !input.value.includes(':')) {
+          return;
+        }
+        if (length === 5) {
+          e.preventDefault();
+          timeOutRef.current?.focus();
+        }
       }
-    }
-  }, [handleTimeInBlur]);
+    },
+    [timeOut, validateAndSave]
+  );
 
-  const handleTimeOutKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleTimeOutBlur();
-      (e.target as HTMLInputElement).blur();
-    } else if (e.key === 'ArrowLeft') {
-      const input = e.target as HTMLInputElement;
-      const length = input.value.length;
-      if (length === 0 || (length === 1 && input.selectionStart === 0)) {
-        e.preventDefault();
-        timeInRef.current?.focus();
+  const handleTimeOutKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        const currentValue = (e.target as HTMLInputElement).value;
+        validateAndSaveOut(timeIn, currentValue);
+        (e.target as HTMLInputElement).blur();
+      } else if (e.key === 'ArrowLeft') {
+        const input = e.target as HTMLInputElement;
+        const length = input.value.length;
+        if (length === 0 || (length === 1 && input.selectionStart === 0)) {
+          e.preventDefault();
+          timeInRef.current?.focus();
+        }
       }
-    }
-  }, [handleTimeOutBlur]);
+    },
+    [timeIn, validateAndSaveOut]
+  );
 
   const handleCommentChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setComment(e.target.value);
@@ -148,60 +183,74 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
-    saveAndUpdate(timeIn || undefined, timeOut || undefined, comment);
+    const sanitizedComment = sanitizeComment(comment);
+    if (sanitizedComment !== comment) {
+      setComment(sanitizedComment);
+    }
+    saveAndUpdate(timeIn || undefined, timeOut || undefined, sanitizedComment);
   }, [timeIn, timeOut, comment, saveAndUpdate]);
 
-  const handleCommentKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleCommentBlur();
-      (e.target as HTMLInputElement).blur();
-    }
-  }, [handleCommentBlur]);
+  const handleCommentKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === 'Enter') {
+        handleCommentBlur();
+        (e.target as HTMLInputElement).blur();
+      }
+    },
+    [handleCommentBlur]
+  );
 
   const handleCommentClick = useCallback(() => {
     if (!commentInputRef.current || !comment) return;
     const isOverflowing = commentInputRef.current.scrollWidth > commentInputRef.current.clientWidth;
     if (isOverflowing) {
-      setPopupComment(comment);
-      setShowCommentPopup(true);
+      setCommentText(comment);
+      setShowCommentModal(true);
     }
   }, [comment]);
 
-  const handlePopupCommentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setPopupComment(e.target.value);
+  const handleCommentTextChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCommentText(e.target.value);
   }, []);
 
-  const handlePopupSave = useCallback(() => {
-    setComment(popupComment);
-    setShowCommentPopup(false);
-    saveAndUpdate(timeIn || undefined, timeOut || undefined, popupComment);
-  }, [popupComment, timeIn, timeOut, saveAndUpdate]);
+  const handleModalSave = useCallback(() => {
+    const sanitizedComment = sanitizeComment(commentText);
+    setComment(sanitizedComment);
+    setShowCommentModal(false);
+    saveAndUpdate(timeIn || undefined, timeOut || undefined, sanitizedComment);
+  }, [commentText, timeIn, timeOut, saveAndUpdate]);
 
-  const handlePopupClose = useCallback(() => {
-    setShowCommentPopup(false);
+  const handleModalClose = useCallback(() => {
+    if (isResizingRef.current) {
+      isResizingRef.current = false;
+      return;
+    }
+    setShowCommentModal(false);
   }, []);
 
   const handleResizeStart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const popup = (e.target as HTMLElement).closest('.time-row__comment-popup') as HTMLElement;
-    if (!popup) return;
-    
-    const rect = popup.getBoundingClientRect();
+    isResizingRef.current = true;
+
+    const modal = (e.target as HTMLElement).closest('.time-row__comment-modal') as HTMLElement;
+    if (!modal) return;
+
+    const rect = modal.getBoundingClientRect();
     resizeStartRef.current = {
       x: e.clientX,
       y: e.clientY,
       width: rect.width,
-      height: rect.height
+      height: rect.height,
     };
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       if (!resizeStartRef.current) return;
       const deltaX = moveEvent.clientX - resizeStartRef.current.x;
       const deltaY = moveEvent.clientY - resizeStartRef.current.y;
-      setTextareaSize({
+      setModalSize({
         width: Math.min(700, Math.max(400, resizeStartRef.current.width + deltaX)),
-        height: Math.max(200, resizeStartRef.current.height + deltaY)
+        height: Math.max(200, resizeStartRef.current.height + deltaY),
       });
     };
 
@@ -209,40 +258,64 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       resizeStartRef.current = null;
+      setTimeout(() => {
+        isResizingRef.current = false;
+      }, 0);
     };
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   }, []);
 
-  const getStatusClass = (): string => {
-    if (!record.timeIn || !record.timeOut) return '';
-    if (record.hoursWorked > settings.standardHours) return 'time-row__status--overtime';
-    if (record.hoursWorked < settings.standardHours) return 'time-row__status--undertime';
-    return 'time-row__status--normal';
-  };
+  const { statusClass, statusLabel, statusIcon } = useMemo(() => {
+    const getStatusClass = (): string => {
+      if (!record.timeIn || !record.timeOut) return '';
+      if (record.hoursWorked > settings.standardHours) return 'time-row__status--overtime';
+      if (record.hoursWorked < settings.standardHours) return 'time-row__status--undertime';
+      return 'time-row__status--normal';
+    };
 
-  const getStatusIcon = (): string => {
-    if (!record.timeIn || !record.timeOut) return '';
-    if (record.hoursWorked > settings.standardHours) return '↑';
-    if (record.hoursWorked < settings.standardHours) return '↓';
-    return '✓';
-  };
+    const getStatusLabel = (): string => {
+      if (!record.timeIn || !record.timeOut) return 'Нет данных';
+      if (record.hoursWorked > settings.standardHours)
+        return `Сверхурочно: ${formatHours(record.overtimeHours)}`;
+      if (record.hoursWorked < settings.standardHours)
+        return `Недоработка: ${formatHours(record.undertimeHours)}`;
+      return 'Норма';
+    };
 
-  const date = new Date(record.date);
+    const getStatusIcon = (): string => {
+      if (!record.timeIn || !record.timeOut) return '';
+      if (record.hoursWorked > settings.standardHours) return '↑';
+      if (record.hoursWorked < settings.standardHours) return '↓';
+      return '✓';
+    };
+
+    return {
+      statusClass: getStatusClass(),
+      statusLabel: getStatusLabel(),
+      statusIcon: getStatusIcon(),
+    };
+  }, [
+    record.timeIn,
+    record.timeOut,
+    record.hoursWorked,
+    record.overtimeHours,
+    record.undertimeHours,
+    settings.standardHours,
+  ]);
+
+  const date = useMemo(() => new Date(record.date), [record.date]);
 
   return (
-    <div 
-      className="time-row"
-      role="row"
-    >
-      <div className="time-row__cell time-row__cell--date">
+    <tr className="time-row">
+      <td className="time-row__cell time-row__cell--date">
         <span className="time-row__date-combined">
           <span className="time-row__day-short">{getDayNameShort(date)}</span>
           <span className="time-row__date-short">{formatDateShort(date)}</span>
         </span>
-      </div>
-      <div className="time-row__cell">
+      </td>
+      <td className="time-row__cell">
         <div className="time-row__input-wrapper">
           <TimeInput
             ref={timeInRef}
@@ -253,13 +326,11 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
             aria-label="Время прихода"
           />
           {timeInError && (
-            <div className="time-row__tooltip time-row__tooltip--top">
-              {timeInError}
-            </div>
+            <div className="time-row__tooltip time-row__tooltip--top">{timeInError}</div>
           )}
         </div>
-      </div>
-      <div className="time-row__cell">
+      </td>
+      <td className="time-row__cell">
         <div className="time-row__input-wrapper">
           <TimeInput
             ref={timeOutRef}
@@ -270,26 +341,36 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
             aria-label="Время ухода"
           />
           {timeOutError && (
-            <div className="time-row__tooltip time-row__tooltip--top">
-              {timeOutError}
-            </div>
+            <div className="time-row__tooltip time-row__tooltip--top">{timeOutError}</div>
           )}
         </div>
-      </div>
-      <div className="time-row__cell time-row__cell--hours" role="cell">
-        {record.hoursWorked > 0 ? formatHours(record.hoursWorked) : '—'}
-      </div>
-      <div className="time-row__cell">
-        <span className={`time-row__status ${getStatusClass()}`}>
-          {getStatusIcon() && <span className="time-row__status-icon">{getStatusIcon()}</span>}
-          {record.overtimeHours > 0 && <span>{formatHours(record.overtimeHours)}</span>}
-          {record.undertimeHours > 0 && <span>{formatHours(record.undertimeHours)}</span>}
+      </td>
+      <td className="time-row__cell time-row__cell--hours">
+        {record.hoursWorked > 0 ? (
+          formatHours(record.hoursWorked)
+        ) : (
+          <span className="time-row__cell--hours-placeholder">—</span>
+        )}
+      </td>
+      <td className="time-row__cell">
+        <span className={`time-row__status ${statusClass}`} aria-label={statusLabel}>
+          {statusIcon && (
+            <span className="time-row__status-icon" aria-hidden="true">
+              {statusIcon}
+            </span>
+          )}
+          {record.overtimeHours > 0 && (
+            <span aria-hidden="true">{formatHours(record.overtimeHours)}</span>
+          )}
+          {record.undertimeHours > 0 && (
+            <span aria-hidden="true">{formatHours(record.undertimeHours)}</span>
+          )}
         </span>
-      </div>
-      <div className="time-row__cell time-row__cell--earnings" role="cell">
-        {record.dailyEarnings > 0 ? <CurrencyValue amount={record.dailyEarnings} /> : '—'}
-      </div>
-      <div className="time-row__cell">
+      </td>
+      <td className="time-row__cell time-row__cell--earnings">
+        {record.dailyEarnings > 0 ? <CurrencyValue amount={record.dailyEarnings} /> : <span style={{ color: 'var(--color-text-muted)' }}>—</span>}
+      </td>
+      <td className="time-row__cell">
         <input
           ref={commentInputRef}
           type="text"
@@ -299,41 +380,48 @@ const TimeRowComponent: React.FC<TimeRowProps> = ({ record, onUpdate }) => {
           onBlur={handleCommentBlur}
           onKeyDown={handleCommentKeyDown}
           onClick={handleCommentClick}
-          placeholder="..."
+          placeholder="—"
           aria-label="Комментарий"
         />
-        {showCommentPopup && (
-          <div className="time-row__comment-popup-overlay" onMouseDown={handlePopupClose}>
-            <div 
-              className="time-row__comment-popup" 
-              onClick={(e) => e.stopPropagation()}
-              style={{ width: textareaSize.width, height: textareaSize.height }}
-            >
-              <textarea
-                ref={textareaRef}
-                className="time-row__comment-popup-textarea"
-                value={popupComment}
-                onChange={handlePopupCommentChange}
-                autoFocus
-                placeholder="Введите комментарий..."
-              />
-              <div className="time-row__comment-popup-actions">
-                <button type="button" className="time-row__comment-popup-btn time-row__comment-popup-btn--cancel" onClick={handlePopupClose}>
-                  Отмена
-                </button>
-                <button type="button" className="time-row__comment-popup-btn time-row__comment-popup-btn--save" onClick={handlePopupSave}>
-                  Сохранить
-                </button>
+        {showCommentModal &&
+          ReactDOM.createPortal(
+            <div className="time-row__comment-modal-overlay" onClick={handleModalClose}>
+              <div
+                className="time-row__comment-modal"
+                onClick={e => e.stopPropagation()}
+                style={{ width: modalSize.width, height: modalSize.height }}
+              >
+                <textarea
+                  ref={commentTextareaRef}
+                  className="time-row__comment-modal-textarea"
+                  value={commentText}
+                  onChange={handleCommentTextChange}
+                  autoFocus
+                  placeholder="Введите комментарий..."
+                />
+                <div className="time-row__comment-modal-actions">
+                  <button
+                    type="button"
+                    className="time-row__comment-modal-btn time-row__comment-modal-btn--cancel"
+                    onClick={handleModalClose}
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    type="button"
+                    className="time-row__comment-modal-btn time-row__comment-modal-btn--save"
+                    onClick={handleModalSave}
+                  >
+                    Сохранить
+                  </button>
+                </div>
+                <div className="time-row__comment-modal-resize" onMouseDown={handleResizeStart} />
               </div>
-              <div 
-                className="time-row__comment-popup-resize" 
-                onMouseDown={handleResizeStart}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+            </div>,
+            document.body
+          )}
+      </td>
+    </tr>
   );
 };
 

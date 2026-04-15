@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { db } from '../services/database';
+import { useCallback } from 'react';
+import { useAppStore } from '../store';
 import { Tab } from '../types';
 import { getMonthName } from '../services/dateUtils';
 
@@ -10,36 +10,14 @@ interface NextMonthInfo {
 }
 
 export const useTabs = () => {
-  const [tabs, setTabs] = useState<Tab[]>(db.getTabs());
-  const [activeTabId, setActiveTabIdState] = useState<string | null>(
-    db.getActiveTabId() || (tabs.length > 0 ? tabs[0].id : null)
-  );
-
-  const setActiveTabId = useCallback((id: string | null) => {
-    setActiveTabIdState(id);
-    db.setActiveTabId(id);
-  }, []);
-
-  useEffect(() => {
-    const unsubscribe = db.subscribe(() => {
-      setTabs(db.getTabs());
-    });
-    return unsubscribe;
-  }, []);
-
-  useEffect(() => {
-    setTabs(db.getTabs());
-    const currentTabs = db.getTabs();
-    const currentActive = db.getActiveTabId();
-    
-    if (currentTabs.length > 0) {
-      if (!currentActive || !currentTabs.some(t => t.id === currentActive)) {
-        setActiveTabId(currentTabs[0].id);
-      }
-    } else {
-      setActiveTabId(null);
-    }
-  }, []);
+  const tabs = useAppStore((s) => s.getSortedTabs());
+  const activeTabId = useAppStore((s) => s.activeTabId);
+  const setActiveTabId = useAppStore((s) => s.setActiveTabId);
+  const createTab = useAppStore((s) => s.createTab);
+  const updateTab = useAppStore((s) => s.updateTab);
+  const deleteTab = useAppStore((s) => s.deleteTab);
+  const restoreDeletedTab = useAppStore((s) => s.restoreDeletedTab);
+  const deletedTab = useAppStore((s) => s.deletedTab);
 
   const getNextMonthInfo = useCallback((existingTabs: Tab[]): NextMonthInfo => {
     const now = new Date();
@@ -68,35 +46,27 @@ export const useTabs = () => {
     };
   }, []);
 
-  const createTab = useCallback(() => {
-    const currentTabs = db.getTabs();
-    const { name, year, month } = getNextMonthInfo(currentTabs);
-    const newTab = db.createTab(name, year, month);
-    setTabs(db.getTabs());
-    setActiveTabId(newTab.id);
-    return newTab;
-  }, [getNextMonthInfo]);
+  const handleCreateTab = useCallback(() => {
+    const { name, year, month } = getNextMonthInfo(tabs);
+    return createTab(name, year, month);
+  }, [createTab, getNextMonthInfo, tabs]);
 
   const renameTab = useCallback((id: string, name: string) => {
-    db.updateTab(id, { name });
-    setTabs(db.getTabs());
-  }, []);
+    updateTab(id, { name });
+  }, [updateTab]);
 
-  const deleteTab = useCallback((id: string) => {
-    db.deleteTab(id);
-    setTabs(db.getTabs());
-    if (activeTabId === id) {
-      const remainingTabs = db.getTabs();
-      setActiveTabId(remainingTabs.length > 0 ? remainingTabs[0].id : null);
-    }
-  }, [activeTabId]);
+  const handleDeleteTab = useCallback((id: string) => {
+    deleteTab(id);
+  }, [deleteTab]);
 
   return {
     tabs,
     activeTabId,
     setActiveTabId,
-    createTab,
+    createTab: handleCreateTab,
     renameTab,
-    deleteTab
+    deleteTab: handleDeleteTab,
+    restoreDeletedTab,
+    deletedTab,
   };
 };

@@ -1,1 +1,1 @@
-export { useAppStore, type ThemeMode } from './useAppStore';
+export { useAppStore, type ThemeMode, type DeletedTabSnapshot } from './useAppStore';

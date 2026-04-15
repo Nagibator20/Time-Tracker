@@ -70,13 +70,12 @@
     gap: $spacing-sm;
     flex: 1;
     padding: $spacing-md;
-    background: var(--color-bg);
-    border: 1px solid var(--color-border);
+    background: transparent;
+    border: 1px solid;
     border-radius: $border-radius-md;
     cursor: pointer;
     font-size: $font-size-sm;
     font-weight: 500;
-    color: var(--color-text-muted);
     transition: $transition;
 
     &:hover {
@@ -88,9 +87,8 @@
     }
 
     &--export {
-      background: var(--color-success-light);
       color: var(--color-success);
-      border-color: rgba(var(--color-success), 0.1);
+      border-color: var(--color-success);
 
       &:hover {
         background: var(--color-success);
@@ -99,10 +97,32 @@
     }
 
     &--import {
+      color: var(--color-primary);
+      border-color: var(--color-primary);
+
       &:hover {
         background: var(--color-primary);
         color: white;
-        border-color: var(--color-primary);
+      }
+    }
+
+    &--csv {
+      color: var(--color-warning);
+      border-color: var(--color-warning);
+
+      &:hover {
+        background: var(--color-warning);
+        color: white;
+      }
+    }
+
+    &--pdf {
+      color: var(--color-danger);
+      border-color: var(--color-danger);
+
+      &:hover {
+        background: var(--color-danger);
+        color: white;
       }
     }
   }

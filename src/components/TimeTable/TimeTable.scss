@@ -1,6 +1,6 @@
 @import '../../styles/_variables.scss';
 
-$time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
+$time-table-columns: 140px 100px 100px 70px 70px 120px 1fr;
 
 .time-table-wrapper {
   background-color: var(--color-card);
@@ -15,28 +15,29 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
 .time-table {
   width: 100%;
   min-width: 600px;
+  border-collapse: collapse;
 
-  &__header {
-    display: grid;
-    grid-template-columns: $time-table-columns;
+  thead {
     background-color: var(--color-hover-bg);
     border-bottom: 1px solid var(--color-border);
-    align-items: center;
     position: sticky;
     top: 0;
     z-index: 1;
 
     @media (max-width: 900px) {
-      grid-template-columns: 120px 80px 80px 60px;
-
-      .time-table__cell:nth-child(5),
-      .time-table__cell:nth-child(6),
-      .time-table__cell:nth-child(7) {
+      th:nth-child(5),
+      th:nth-child(6),
+      th:nth-child(7) {
         display: none;
       }
     }
 
-    .time-table__cell {
+    tr {
+      display: grid;
+      grid-template-columns: $time-table-columns;
+    }
+
+    th {
       padding: $spacing-md;
       text-align: left;
       font-weight: 600;
@@ -45,16 +46,14 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
-  }
 
-  &__body {
-    background-color: var(--color-card);
-  }
-
-  &__cell {
-    &--earnings {
-      text-align: right !important;
+    .time-table__col--earnings {
+      text-align: right;
     }
+  }
+
+  tbody {
+    background-color: var(--color-card);
   }
 
   &__empty {
@@ -92,9 +91,9 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
   @media (max-width: 900px) {
     grid-template-columns: 120px 80px 80px 60px;
 
-    .time-row__cell:nth-child(5),
-    .time-row__cell:nth-child(6),
-    .time-row__cell:nth-child(7) {
+    td:nth-child(5),
+    td:nth-child(6),
+    td:nth-child(7) {
       display: none;
     }
   }
@@ -115,6 +114,11 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
     &--hours {
       font-weight: 500;
       color: var(--color-text-main);
+      align-items: center;
+    }
+
+    &--hours-placeholder {
+      color: var(--color-text-muted) !important;
     }
 
     &--earnings {
@@ -122,6 +126,11 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
       align-items: flex-end;
       font-weight: 600;
       color: var(--color-primary);
+    }
+
+    &--earnings-placeholder {
+      color: var(--color-text-muted) !important;
+      font-weight: 600 !important;
     }
   }
 
@@ -248,7 +257,7 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
     }
   }
 
-  &__comment-popup-overlay {
+  &__comment-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -262,7 +271,7 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
     animation: popupFadeIn 0.2s ease;
   }
 
-  &__comment-popup {
+  &__comment-modal {
     background: var(--color-card);
     border-radius: $border-radius-lg;
     padding: $spacing-lg;
@@ -278,12 +287,12 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
     box-sizing: border-box;
   }
 
-  &__comment-popup-textarea {
+  &__comment-modal-textarea {
     flex: 1;
     width: 100%;
     padding: $spacing-md;
     border: 1px solid var(--color-border);
-    border-radius: $border-radius-md;
+    border-radius: 8px;
     background: var(--color-bg);
     color: var(--color-text-main);
     font-family: inherit;
@@ -322,7 +331,7 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
     }
   }
 
-  &__comment-popup-resize {
+  &__comment-modal-resize {
     position: absolute;
     bottom: 0;
     right: 0;
@@ -340,22 +349,8 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
     &::before {
       content: '';
       position: absolute;
-      width: 2px;
-      height: 8px;
-      background: var(--color-text-muted);
-      border-radius: 1px;
-      opacity: 0.5;
-      transition: opacity 0.2s;
-      right: 4px;
-      bottom: 3px;
-      transform: rotate(45deg);
-    }
-
-    &::after {
-      content: '';
-      position: absolute;
-      width: 2px;
-      height: 8px;
+      width: 1px;
+      height: 10px;
       background: var(--color-text-muted);
       border-radius: 1px;
       opacity: 0.5;
@@ -365,20 +360,34 @@ $time-table-columns: 140px 0.1fr 0.1fr 100px 150px 120px 1fr;
       transform: rotate(45deg);
     }
 
+    &::after {
+      content: '';
+      position: absolute;
+      width: 1px;
+      height: 20px;
+      background: var(--color-text-muted);
+      border-radius: 1px;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+      right: 12px;
+      bottom: 1px;
+      transform: rotate(45deg);
+    }
+
     &:hover::before,
     &:hover::after {
       opacity: 1;
     }
   }
 
-  &__comment-popup-actions {
+  &__comment-modal-actions {
     display: flex;
     justify-content: flex-end;
     gap: $spacing-sm;
     margin-top: $spacing-md;
   }
 
-  &__comment-popup-btn {
+  &__comment-modal-btn {
     padding: $spacing-sm $spacing-md;
     border-radius: $border-radius-md;
     font-size: $font-size-sm;

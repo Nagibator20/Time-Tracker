@@ -111,8 +111,22 @@ const TabsComponent: React.FC<TabsProps> = ({
     onTabSelect(id);
   }, [onTabSelect]);
 
+  const handleTabKeyDown = useCallback((e: React.KeyboardEvent, id: string) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onTabSelect(id);
+    }
+  }, [onTabSelect]);
+
+  const handleGroupKeyDown = useCallback((e: React.KeyboardEvent, year: number) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setExpandedYear(prev => prev === year ? null : year);
+    }
+  }, []);
+
   return (
-    <div className="tabs" ref={containerRef}>
+    <nav className="tabs" ref={containerRef} aria-label="Навигация по месяцам">
       <div className="tabs__container">
         {groupedTabs.map(group => {
           const isExpanded = expandedYear === group.year;
@@ -123,19 +137,34 @@ const TabsComponent: React.FC<TabsProps> = ({
               <div
                 className={`tabs__group-header ${isExpanded ? 'tabs__group-header--expanded' : ''} ${hasActiveTab ? 'tabs__group-header--active' : ''}`}
                 onClick={(e) => toggleYear(e, group.year)}
+                onKeyDown={(e) => handleGroupKeyDown(e, group.year)}
+                role="button"
+                tabIndex={0}
+                aria-expanded={isExpanded}
+                aria-controls={`tabs-year-${group.year}`}
               >
                 <span className="tabs__group-title">{group.year}</span>
-                <span className="tabs__group-count">{group.tabs.length}</span>
-                <span className="tabs__group-arrow">{isExpanded ? '▾' : '▴'}</span>
+                <span className="tabs__group-count" aria-label={`${group.tabs.length} месяцев`}>{group.tabs.length}</span>
+                <span className="tabs__group-arrow" aria-hidden="true">{isExpanded ? '▾' : '▴'}</span>
               </div>
               {isExpanded && (
-                <div className="tabs__group-items">
+                <div 
+                  className="tabs__group-items" 
+                  id={`tabs-year-${group.year}`}
+                  role="tablist"
+                  aria-label={`Месяцы ${group.year} года`}
+                >
                   {group.tabs.map((tab) => (
                     <div
                       key={tab.id}
                       className={`tabs__item ${activeTabId === tab.id ? 'tabs__item--active' : ''}`}
                       onClick={() => handleTabClick(tab.id)}
                       onDoubleClick={(e) => handleDoubleClick(e, tab)}
+                      onKeyDown={(e) => handleTabKeyDown(e, tab.id)}
+                      role="tab"
+                      tabIndex={0}
+                      aria-selected={activeTabId === tab.id}
+                      aria-label={`${tab.name}${activeTabId === tab.id ? ' (активная вкладка)' : ''}`}
                     >
                       {editingId === tab.id ? (
                         <input
@@ -147,6 +176,7 @@ const TabsComponent: React.FC<TabsProps> = ({
                           onBlur={handleRenameSubmit}
                           onKeyDown={handleRenameKeyDown}
                           onClick={(e) => e.stopPropagation()}
+                          aria-label="Новое название вкладки"
                         />
                       ) : (
                         <span className="tabs__name">{tab.name}</span>
@@ -154,8 +184,12 @@ const TabsComponent: React.FC<TabsProps> = ({
                       <button
                         className="tabs__delete-button"
                         onClick={(e) => handleDelete(e, tab.id)}
+                        aria-label={`Удалить ${tab.name}`}
                       >
-                        ×
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
                       </button>
                     </div>
                   ))}
@@ -168,15 +202,21 @@ const TabsComponent: React.FC<TabsProps> = ({
           className="tabs__add-button"
           onClick={handleCreateTab}
           title="Создать вкладку"
+          aria-label="Создать новую вкладку"
         >
-          +
+          <span>+</span>
         </button>
         <div className="tabs__separator"></div>
         <div
           className={`tabs__item tabs__item--report ${showReport ? 'tabs__item--active' : ''}`}
           onClick={() => onTabSelect('report')}
+          onKeyDown={(e) => handleTabKeyDown(e, 'report')}
+          role="tab"
+          tabIndex={0}
+          aria-selected={showReport}
+          aria-label="Годовой отчёт"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <line x1="18" y1="20" x2="18" y2="10"></line>
             <line x1="12" y1="20" x2="12" y2="4"></line>
             <line x1="6" y1="20" x2="6" y2="14"></line>
@@ -184,7 +224,7 @@ const TabsComponent: React.FC<TabsProps> = ({
           Отчёт
         </div>
       </div>
-    </div>
+    </nav>
   );
 };
 

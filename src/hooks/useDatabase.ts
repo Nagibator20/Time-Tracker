@@ -1,45 +1,25 @@
-import { useState, useEffect, useCallback } from 'react';
-import { db } from '../services/database';
-import { Settings } from '../types';
+import { useCallback } from 'react';
+import { useAppStore } from '../store';
 
 export const useDatabase = () => {
-  const [settings, setSettings] = useState<Settings>({
-    id: 1,
-    hourlyRate: 0,
-    standardHours: 8,
-    lunchDuration: 1,
-    currency: '₽',
-    updatedAt: ''
-  });
-
-  useEffect(() => {
-    setSettings(db.getSettings());
-    
-    const unsubscribe = db.subscribe(() => {
-      setSettings(db.getSettings());
-    });
-    return unsubscribe;
-  }, []);
+  const settings = useAppStore((s) => s.settings);
+  const updateSettings = useAppStore((s) => s.updateSettings);
 
   const updateHourlyRate = useCallback((rate: number) => {
-    db.updateSettings({ hourlyRate: rate });
-    setSettings(db.getSettings());
-  }, []);
+    updateSettings({ hourlyRate: rate });
+  }, [updateSettings]);
 
   const updateStandardHours = useCallback((hours: number) => {
-    db.updateSettings({ standardHours: hours });
-    setSettings(db.getSettings());
-  }, []);
+    updateSettings({ standardHours: hours });
+  }, [updateSettings]);
 
   const updateLunchDuration = useCallback((hours: number) => {
-    db.updateSettings({ lunchDuration: hours });
-    setSettings(db.getSettings());
-  }, []);
+    updateSettings({ lunchDuration: hours });
+  }, [updateSettings]);
 
   const updateCurrency = useCallback((currency: string) => {
-    db.updateSettings({ currency });
-    setSettings(db.getSettings());
-  }, []);
+    updateSettings({ currency });
+  }, [updateSettings]);
 
   return {
     settings,

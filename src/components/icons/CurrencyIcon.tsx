@@ -3,7 +3,7 @@ import React from 'react';
 export const CurrencyIcon: React.FC<{ className?: string }> = ({ className }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
-    viewBox="0 0 100 100" 
+    viewBox="0 0 24 24" 
     width="1em" 
     height="1em" 
     className={className}
@@ -14,18 +14,7 @@ export const CurrencyIcon: React.FC<{ className?: string }> = ({ className }) =>
       flexShrink: 0
     }}
   >
-    <circle cx="50" cy="50" r="45" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth="6"/>
-    <circle cx="50" cy="50" r="35" fill="none" stroke="currentColor" strokeWidth="3"/>
-    <text 
-      x="50" 
-      y="63" 
-      fontFamily="Arial, sans-serif" 
-      fontSize="42" 
-      fontWeight="bold" 
-      fill="currentColor" 
-      textAnchor="middle"
-    >
-      $
-    </text>
+    <circle cx="12" cy="12" r="10" fill="currentColor" opacity="0.15"/>
+    <text x="12" y="19" textAnchor="middle" fontWeight="bold" fill="currentColor" fontFamily="Arial, sans-serif" fontSize="21">$</text>
   </svg>
 );

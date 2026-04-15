@@ -6,7 +6,7 @@
 
   &__main {
     background: var(--color-card);
-    padding: $spacing-lg $spacing-xl;
+    padding: $spacing-md $spacing-xl;
     border-radius: $border-radius-lg;
     box-shadow: $shadow-sm;
     display: flex;
@@ -33,22 +33,36 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    margin-bottom: $spacing-md;
+    margin-bottom: $spacing-xs;
   }
 
   &__title {
-    font-size: $font-size-xl;
+    font-size: $font-size-lg;
     font-weight: 700;
     color: var(--color-text-main);
     margin: 0;
+    white-space: nowrap;
+    width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
+  }
+
+  &__total-wrapper {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    justify-content: center;
   }
 
   &__header-actions {
     display: flex;
     gap: $spacing-sm;
+    width: 130px;
+    flex-shrink: 0;
+    justify-content: flex-end;
   }
 
-  &__export-btn,
   &__settings-btn {
     background: transparent;
     border: 1px solid var(--color-border);
@@ -60,6 +74,7 @@
     align-items: center;
     justify-content: center;
     transition: $transition;
+    height: 36px;
 
     &:hover {
       background: var(--color-hover-bg);
@@ -68,7 +83,7 @@
   }
 
   &__label {
-    font-size: $font-size-sm;
+    font-size: $font-size-xs;
     color: var(--color-text-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -76,16 +91,15 @@
   }
 
   &__total {
-    font-size: 32px;
+    font-size: 24px;
     font-weight: 700;
     color: var(--color-text-main);
-    margin-top: $spacing-xs;
   }
 
   &__progress-wrapper {
     width: 100%;
     max-width: 300px;
-    margin-top: $spacing-md;
+    margin-top: $spacing-sm;
   }
 
   &__progress {
@@ -181,6 +195,37 @@
       .earnings__item-value {
         color: var(--color-danger);
       }
+    }
+  }
+}
+
+.currency-value {
+  &__amount {
+    display: inline-block;
+  }
+
+  &--hidden {
+    .currency-value__amount {
+      background-color: red;
+      filter: blur(8px);
+      opacity: 0.7;
+      transition:
+        filter 0.2s ease,
+        opacity 0.2s ease;
+    }
+
+    svg {
+      opacity: 0.5;
+    }
+  }
+
+  &--visible {
+    .currency-value__amount {
+      filter: blur(0);
+      opacity: 1;
+      transition:
+        filter 0.2s ease,
+        opacity 0.2s ease;
     }
   }
 }

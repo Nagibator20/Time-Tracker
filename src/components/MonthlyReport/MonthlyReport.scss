@@ -24,11 +24,92 @@
   }
 
   &__year-select {
-    @include input-base;
+    position: relative;
     min-width: 100px;
-    border-radius: $border-radius-md;
-    background-color: var(--color-card);
-    color: var(--color-text-main);
+
+    &-trigger {
+      @include input-base;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      width: 100%;
+      min-width: 100px;
+      padding: 8px 12px;
+      border-radius: $border-radius-md;
+      background-color: var(--color-card);
+      color: var(--color-text-main);
+      border: 1px solid var(--color-border);
+      cursor: pointer;
+      font-size: inherit;
+      font-family: inherit;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+      &:hover {
+        border-color: var(--color-primary);
+      }
+
+      &:focus-visible {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb, 54, 162, 235), 0.2);
+      }
+    }
+
+    &-arrow {
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+
+    &-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      left: 0;
+      min-width: 100%;
+      background-color: var(--color-card);
+      border: 1px solid var(--color-border);
+      border-radius: $border-radius-md;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      padding: 4px;
+      list-style: none;
+      z-index: 100;
+      animation: dropdownFadeIn 0.15s ease;
+    }
+
+    &-option {
+      padding: 8px 12px;
+      border-radius: $border-radius-sm;
+      cursor: pointer;
+      transition: background-color 0.1s ease, color 0.1s ease;
+      font-size: inherit;
+      color: var(--color-text-main);
+
+      &:hover {
+        background-color: var(--color-hover-bg);
+      }
+
+      &--selected {
+        background-color: var(--color-primary);
+        color: #fff;
+        font-weight: 600;
+
+        &:hover {
+          background-color: var(--color-primary-dark, #2d8ed4);
+        }
+      }
+    }
+  }
+
+  @keyframes dropdownFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   &__chart {

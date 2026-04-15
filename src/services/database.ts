@@ -91,7 +91,12 @@ class DatabaseService {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
       this.notifyListeners();
     } catch (error) {
-      console.error('Failed to save data:', error);
+      const err = error as { name?: string };
+      if (err.name === 'QuotaExceededError') {
+        console.error('LocalStorage quota exceeded. Consider clearing old data.');
+      } else {
+        console.error('Failed to save data:', error);
+      }
     }
   }
 

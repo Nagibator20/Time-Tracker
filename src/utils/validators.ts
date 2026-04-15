@@ -41,7 +41,7 @@ export const validateTimeRange = (timeIn: string, timeOut: string): ValidationRe
   const inMinutes = inTime.hours * 60 + inTime.minutes;
   const outMinutes = outTime.hours * 60 + outTime.minutes;
 
-  if (outMinutes <= inMinutes) {
+  if (outMinutes <= inMinutes && (inMinutes - outMinutes) < 12 * 60) {
     return { isValid: false, error: 'Время ухода должно быть позже времени прихода' };
   }
 

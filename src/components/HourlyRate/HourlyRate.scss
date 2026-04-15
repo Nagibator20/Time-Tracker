@@ -17,6 +17,14 @@
     background: var(--color-bg);
     border-radius: $border-radius-md;
     border: 1px solid var(--color-border);
+
+    svg {
+      width: 1.3em;
+      height: 1.3em;
+      flex-shrink: 0;
+      opacity: 0.7;
+      cursor: default;
+    }
   }
 
   &__label {
@@ -31,6 +39,13 @@
     width: 100px;
     text-align: right;
     border-radius: $border-radius-sm;
+    -moz-appearance: textfield;
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
 
     &--small {
       width: 70px;
@@ -53,7 +68,8 @@
 
   &__actions {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     margin-top: $spacing-sm;
   }
 
@@ -75,4 +91,39 @@
       transform: translateY(0);
     }
   }
+
+  &__visibility-btn {
+    @include button-base;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    padding: $spacing-md;
+    border: 1px solid var(--color-border);
+    border-radius: $border-radius-md;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border-color: var(--color-primary);
+
+    &:hover {
+      opacity: 0.9;
+    }
+
+    &--active {
+      background-color: var(--color-primary);
+      border-color: var(--color-primary);
+    }
+  }
+
+  &__eye-icon {
+    display: block;
+
+    path {
+      fill: #000 !important;
+    }
+  }
+}
+
+[data-theme='dark'] .hourly-rate__eye-icon path {
+  fill: #fff !important;
 }

@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { db } from '../services/database';
-import { TimeRecord, TimeRecordInput } from '../types';
+import { useCallback, useMemo } from 'react';
+import { useAppStore } from '../store';
+import { TimeRecordInput } from '../types';
 
 interface UseTimeRecordsParams {
   tabId: string | null;
@@ -9,61 +9,48 @@ interface UseTimeRecordsParams {
 }
 
 export const useTimeRecords = ({ tabId, year, month }: UseTimeRecordsParams) => {
-  const [records, setRecords] = useState<TimeRecord[]>([]);
-  const [loading, setLoading] = useState(false);
+  const timeRecords = useAppStore((s) => s.timeRecords);
+  const updateTimeRecord = useAppStore((s) => s.updateTimeRecord);
 
-  const loadRecords = useCallback(() => {
-    if (!tabId) {
-      setRecords([]);
-      return;
-    }
-    setLoading(true);
-    try {
-      const data = db.getTimeRecords(tabId);
-      setRecords(data);
-    } finally {
-      setLoading(false);
-    }
-  }, [tabId]);
-
-  useEffect(() => {
-    loadRecords();
-    
-    const unsubscribe = db.subscribe(() => {
-      loadRecords();
-    });
-    
-    return unsubscribe;
-  }, [loadRecords]);
-
-  const filteredRecords = useMemo(() => {
-    if (year === undefined || month === undefined) {
-      return records;
-    }
+  const records = useMemo(() => {
+    if (!tabId) return [];
+    const allRecords = timeRecords.filter((r) => r.tabId === tabId).sort((a, b) => a.date.localeCompare(b.date));
+    if (year === undefined || month === undefined) return allRecords;
     const monthStr = (month + 1).toString().padStart(2, '0');
-    return records.filter(r => r.date.startsWith(`${year}-${monthStr}`));
-  }, [records, year, month]);
+    return allRecords.filter(r => r.date.startsWith(`${year}-${monthStr}`));
+  }, [tabId, year, month, timeRecords]);
 
   const updateRecord = useCallback((date: string, input: TimeRecordInput) => {
     if (!tabId) return;
-    db.updateTimeRecord(tabId, date, input);
-    loadRecords();
-  }, [tabId, loadRecords]);
+    updateTimeRecord(tabId, date, input);
+  }, [tabId, updateTimeRecord]);
 
   const getTotals = useCallback(() => {
-    return filteredRecords.reduce((acc, record) => ({
-      totalHours: acc.totalHours + record.hoursWorked,
-      totalEarnings: acc.totalEarnings + record.dailyEarnings,
-      totalOvertime: acc.totalOvertime + record.overtimeHours,
-      totalUndertime: acc.totalUndertime + record.undertimeHours
-    }), { totalHours: 0, totalEarnings: 0, totalOvertime: 0, totalUndertime: 0 });
-  }, [filteredRecords]);
+    const totalMinutes = records.reduce((acc, record) => {
+      const h = Math.round(record.hoursWorked * 60);
+      const ot = Math.round(record.overtimeHours * 60);
+      const ut = Math.round(record.undertimeHours * 60);
+      return {
+        hours: acc.hours + h,
+        overtime: acc.overtime + ot,
+        undertime: acc.undertime + ut,
+        earnings: acc.earnings + record.dailyEarnings,
+      };
+    }, { hours: 0, overtime: 0, undertime: 0, earnings: 0 });
+
+    return {
+      totalHours: totalMinutes.hours / 60,
+      totalEarnings: totalMinutes.earnings,
+      totalOvertime: totalMinutes.overtime / 60,
+      totalUndertime: totalMinutes.undertime / 60,
+    };
+  }, [records]);
 
   return {
-    records: filteredRecords,
-    loading,
+    records,
+    loading: false,
     updateRecord,
     getTotals,
-    refresh: loadRecords
+    refresh: () => {},
   };
 }

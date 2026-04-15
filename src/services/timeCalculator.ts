@@ -75,4 +75,4 @@ export class TimeCalculator {
   }
 }
 
-export const timeCalculator = new TimeCalculator();
+
